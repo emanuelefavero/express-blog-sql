@@ -1,5 +1,6 @@
 import path from 'node:path';
 import express from 'express';
+import { db } from './db/db.js';
 import * as middleware from './middleware/index.js';
 import {
   registerErrors,
@@ -22,6 +23,20 @@ registerErrors(app);
 app.use(middleware.notFound); // 404
 app.use(middleware.errorHandler); // Error handler
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
 });
+
+const shutdown = (signal) => {
+  console.log(`\n${signal} received: closing HTTP server`);
+
+  server.close(async () => {
+    console.log('HTTP server closed');
+
+    await db.end();
+    console.log('Database connection pool closed');
+  });
+};
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
