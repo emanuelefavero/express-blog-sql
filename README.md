@@ -4,6 +4,12 @@ An Express.js blog API with MySQL integration (through mysql2) featuring CRUD op
 
 <img src="logo.svg" alt="Node.js logo" width="100">
 
+## Setup `blog` db with mysql
+
+- Create an empty `blog` database in your MySQL server.
+- Import the `db/setup/blog_db.sql` file into your MySQL database, which contains both the schema and initial data.
+- Verify that the tables and initial data have been correctly imported, e.g. `select * from posts`
+
 ## Run locally
 
 - Clone the repo `https://github.com/emanuelefavero/express-blog-sql.git`
