@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "4393af9c-36fe-4083-8429-f9d4113b3a82",
-    "name": "express-blog-api-crud",
+    "name": "express-blog-sql",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "13059883",
     "_collection_link": "https://go.postman.co/collection/13059883-4393af9c-36fe-4083-8429-f9d4113b3a82?source=collection_link"

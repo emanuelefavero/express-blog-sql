@@ -1,7 +1,7 @@
 {
-  "name": "express-blog-api-crud",
+  "name": "express-blog-sql",
   "version": "1.0.0",
-  "description": "A simple Express blog API with CRUD operations",
+  "description": "A simple Express blog API with mysql2",
   "main": "app.js",
   "scripts": {
     "start": "node .",

@@ -1,12 +1,12 @@
-# Express Blog API CRUD
+# Express Blog SQL
 
-An Express.js blog API implementing CRUD operations for my web dev course.
+An Express.js blog API with MySQL integration (through mysql2) featuring CRUD operations.
 
 <img src="logo.svg" alt="Node.js logo" width="100">
 
 ## Run locally
 
-- Clone the repo `https://github.com/emanuelefavero/express-blog-api-crud.git`
+- Clone the repo `https://github.com/emanuelefavero/express-blog-sql.git`
 - `cd` into the project folder
 - Run:
 
@@ -28,7 +28,7 @@ parameters, responses, and errors.
 
 ### Postman
 
-Drag and drop the `postman/express-blog-api-crud.postman_collection.json` file into Postman to import the collection and test the routes.
+Drag and drop the `postman/express-blog-sql.postman_collection.json` file into Postman to import the collection and test the routes.
 
 ### REST Client
 
@@ -39,3 +39,10 @@ You can also use the [REST Client extension](https://marketplace.visualstudio.co
 ## License
 
 - [MIT](LICENSE.md)
+
+## Resources
+
+- [MySQL Documentation](https://dev.mysql.com/doc/)
+- [mysql2 Documentation](https://sidorares.github.io/node-mysql2/docs)
+- [Express.js Documentation](https://expressjs.com/)
+- [Node.js Documentation](https://nodejs.org/en/docs/)
