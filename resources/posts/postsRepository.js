@@ -86,22 +86,61 @@ export const findById = async (id) => {
   return post;
 };
 
-export const create = (postData) => {
-  const posts = readPosts();
+export const create = async (postData) => {
+  const { title, content, image, tags } = postData;
+  const uniqueTags = [...new Set(tags)];
 
-  const ids = posts.map((post) => post.id);
-  const maxId = ids.length > 0 ? Math.max(...ids) : 0;
+  const connection = await db.getConnection();
 
-  const newPost = {
-    id: maxId + 1,
-    ...postData,
-  };
+  try {
+    await connection.query('START TRANSACTION');
 
-  const updatedPosts = [...posts, newPost];
+    const [postResult] = await connection.query(
+      `
+        INSERT INTO posts (title, content, image) 
+        VALUES (?, ?, ?)
+      `,
+      [title, content, image],
+    );
 
-  writeJsonFile(postsFilePath, updatedPosts);
+    const postId = postResult.insertId;
 
-  return newPost;
+    for (const label of uniqueTags) {
+      const [tagResult] = await connection.query(
+        `
+          INSERT INTO tags (label) 
+          VALUES (?) 
+          ON DUPLICATE KEY UPDATE id = 
+          LAST_INSERT_ID(id)
+        `,
+        [label],
+      );
+
+      const tagId = tagResult.insertId;
+
+      await connection.query(
+        `
+        INSERT INTO post_tag (post_id, tag_id) VALUES (?, ?)
+        `,
+        [postId, tagId],
+      );
+    }
+
+    await connection.query('COMMIT');
+
+    return {
+      id: postId,
+      title,
+      content,
+      image,
+      tags: uniqueTags,
+    };
+  } catch (error) {
+    await connection.query('ROLLBACK');
+    throw error;
+  } finally {
+    connection.release();
+  }
 };
 
 export const update = (id, postData) => {
