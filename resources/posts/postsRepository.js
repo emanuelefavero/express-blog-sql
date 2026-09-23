@@ -75,10 +75,15 @@ export const findAll = async ({
   return posts;
 };
 
-export const findById = (id) => {
-  const posts = readPosts();
+export const findById = async (id) => {
+  const sql = `
+    SELECT * FROM posts
+    WHERE id = ?;
+  `;
 
-  return posts.find((post) => post.id === id);
+  const [posts] = await db.query(sql, [Number(id)]);
+
+  return posts[0] || null;
 };
 
 export const create = (postData) => {
