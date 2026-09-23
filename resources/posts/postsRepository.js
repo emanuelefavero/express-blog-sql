@@ -81,9 +81,9 @@ export const findById = async (id) => {
     WHERE id = ?;
   `;
 
-  const [posts] = await db.query(sql, [Number(id)]);
+  const [[post]] = await db.query(sql, [Number(id)]);
 
-  return posts[0] || null;
+  return post;
 };
 
 export const create = (postData) => {
