@@ -4,11 +4,18 @@ An Express.js blog API with MySQL integration (through mysql2) featuring CRUD op
 
 <img src="logo.svg" alt="Node.js logo" width="100">
 
-## Setup `blog` db with mysql
+## Set up the `blog` database
 
-- Create an empty `blog` database in your MySQL server.
-- Import the `db/setup/blog_db.sql` file into your MySQL database, which contains both the schema and initial data.
-- Verify that the tables and initial data have been correctly imported, e.g. `select * from posts`
+- Create an empty `blog` database in MySQL.
+- Import `db/setup/blog_db.sql`, which contains the schema and initial data.
+- Verify the import, for example with `SELECT * FROM posts;`.
+
+The application connects to MySQL on `localhost` as `root`. If the user has a
+password, provide it through the `DB_PASSWORD` environment variable:
+
+```bash
+DB_PASSWORD=your_password npm start
+```
 
 ## Run locally
 
@@ -34,7 +41,9 @@ parameters, responses, and errors.
 
 ### Postman
 
-Drag and drop the `postman/express-blog-sql.postman_collection.json` file into Postman to import the collection and test the routes.
+Import `postman/express-blog-sql.postman_collection.json` into Postman. Run the
+requests in the `CRUD flow` folder in order so the created post is reused for
+the update and delete requests.
 
 ### REST Client
 

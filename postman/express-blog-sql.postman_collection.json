@@ -1,0 +1,228 @@
+{
+  "info": {
+    "_postman_id": "4393af9c-36fe-4083-8429-f9d4113b3a82",
+    "name": "express-blog-sql",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get all posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts"
+          }
+        },
+        {
+          "name": "Filter, search and sort posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts?tag=dolci&search=torta&sortBy=title&order=desc"
+          }
+        },
+        {
+          "name": "Limit posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts?sortBy=id&order=desc&_limit=2"
+          }
+        },
+        {
+          "name": "Get post with tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts/1"
+          }
+        },
+        {
+          "name": "Invalid limit (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts?_limit=abc"
+          }
+        },
+        {
+          "name": "Invalid sort field (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts?sortBy=date"
+          }
+        },
+        {
+          "name": "Invalid post ID (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts/abc"
+          }
+        },
+        {
+          "name": "Post not found (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts/999999"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CRUD flow (run in order)",
+      "item": [
+        {
+          "name": "Create post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('createdPostId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Scialatielli ai frutti di mare\",\n  \"content\": \"Un primo piatto tipico della Costiera Amalfitana.\",\n  \"image\": \"scialatielli_frutti_mare.avif\",\n  \"tags\": [\"primi piatti\", \"ricette di pesce\", \"cucina campana\"]\n}"
+            },
+            "url": "{{baseUrl}}/posts"
+          }
+        },
+        {
+          "name": "Update created post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Spaghetti al limone di Amalfi\",\n  \"content\": \"Un primo piatto fresco e profumato.\",\n  \"image\": \"spaghetti_limone_amalfi.avif\",\n  \"tags\": [\"primi piatti\", \"ricette vegetariane\", \"cucina campana\"]\n}"
+            },
+            "url": "{{baseUrl}}/posts/{{createdPostId}}"
+          }
+        },
+        {
+          "name": "Get updated post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts/{{createdPostId}}"
+          }
+        },
+        {
+          "name": "Delete created post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/posts/{{createdPostId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Other routes",
+      "item": [
+        {
+          "name": "API overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/"
+          }
+        },
+        {
+          "name": "Unknown route (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/non-existent"
+          }
+        },
+        {
+          "name": "Unsupported charset (415)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json; charset=iso-8859-1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{baseUrl}}/posts"
+          }
+        },
+        {
+          "name": "Internal server error (500)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/errors"
+          }
+        },
+        {
+          "name": "Service unavailable (503)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/errors/unavailable"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "createdPostId",
+      "value": ""
+    }
+  ]
+}

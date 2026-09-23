@@ -1,4 +1,4 @@
-# Express Blog API
+# Express Blog SQL API
 
 REST API for reading and managing blog posts.
 
@@ -19,8 +19,7 @@ responses use this structure:
 }
 ```
 
-The successful delete response has no body. The store and update endpoints are
-currently placeholders and return plain text.
+The successful delete response has no body.
 
 ## Post resource
 
@@ -29,7 +28,7 @@ currently placeholders and return plain text.
 | `id`      | integer  | Unique positive identifier    |
 | `title`   | string   | Post title                    |
 | `content` | string   | Post content                  |
-| `image`   | string   | Path to the post image        |
+| `image`   | string   | Post image filename           |
 | `tags`    | string[] | Tags associated with the post |
 
 Example:
@@ -37,10 +36,10 @@ Example:
 ```json
 {
   "id": 1,
-  "title": "Ciambellone della domenica",
-  "content": "Un ciambellone soffice e semplice, perfetto per la colazione.",
-  "image": "/images/posts/ciambellone.jpeg",
-  "tags": ["dolci", "colazione", "ciambellone"]
+  "title": "Ciambellone",
+  "content": "Sarà che una volta le cose erano più semplici...",
+  "image": "ciambellone.avif",
+  "tags": ["Dolci", "Torte", "Ricette vegetariane", "Ricette al forno"]
 }
 ```
 
@@ -51,8 +50,8 @@ Example:
 | `GET`    | `/`          | Show general API information | Implemented    |
 | `GET`    | `/posts`     | Get all posts                | Implemented    |
 | `GET`    | `/posts/:id` | Get one post by ID           | Implemented    |
-| `POST`   | `/posts`     | Create a post                | Placeholder    |
-| `PUT`    | `/posts/:id` | Update a post                | Placeholder    |
+| `POST`   | `/posts`     | Create a post                | Implemented    |
+| `PUT`    | `/posts/:id` | Update a post                | Implemented    |
 | `DELETE` | `/posts/:id` | Delete a post                | Implemented    |
 
 ### `GET /`
@@ -101,6 +100,9 @@ the [Endpoints](#endpoints) table.
 Returns an array containing all posts. Query parameters can be combined; they
 are applied in this order: filter by tag, search, sort, and limit.
 
+The INDEX response contains the columns from the `posts` table. Associated tags
+are currently included only in the SHOW response.
+
 #### Query parameters
 
 | Parameter | Type    | Accepted values      | Description                                                     |
@@ -137,10 +139,9 @@ Status: `200 OK`
 [
   {
     "id": 5,
-    "title": "Torta paesana della tradizione",
-    "content": "La classica torta paesana, ricca e dal sapore rustico.",
-    "image": "/images/posts/torta_paesana.jpeg",
-    "tags": ["dolci", "torta", "tradizione"]
+    "title": "Torta paesana",
+    "content": "La torta paesana è un dolce di origine lombarda...",
+    "image": "torta_paesana.avif"
   }
 ]
 ```
@@ -195,10 +196,10 @@ Status: `200 OK`
 ```json
 {
   "id": 1,
-  "title": "Ciambellone della domenica",
-  "content": "Un ciambellone soffice e semplice, perfetto per la colazione.",
-  "image": "/images/posts/ciambellone.jpeg",
-  "tags": ["dolci", "colazione", "ciambellone"]
+  "title": "Ciambellone",
+  "content": "Sarà che una volta le cose erano più semplici...",
+  "image": "ciambellone.avif",
+  "tags": ["Dolci", "Torte", "Ricette vegetariane", "Ricette al forno"]
 }
 ```
 
@@ -238,7 +239,7 @@ only `title`, `content`, `image`, and `tags`.
 {
   "title": "Scialatielli ai frutti di mare",
   "content": "Un primo piatto tipico della Costiera Amalfitana.",
-  "image": "/images/posts/scialatielli_frutti_mare.jpeg",
+  "image": "scialatielli_frutti_mare.avif",
   "tags": ["primi piatti", "ricette di pesce"]
 }
 ```
@@ -255,7 +256,7 @@ The response contains the created post and a `Location` header such as
   "id": 6,
   "title": "Scialatielli ai frutti di mare",
   "content": "Un primo piatto tipico della Costiera Amalfitana.",
-  "image": "/images/posts/scialatielli_frutti_mare.jpeg",
+  "image": "scialatielli_frutti_mare.avif",
   "tags": ["primi piatti", "ricette di pesce"]
 }
 ```
@@ -287,7 +288,7 @@ Status: `200 OK`
   "id": 1,
   "title": "Ciambellone aggiornato",
   "content": "Nuovo contenuto.",
-  "image": "/images/posts/ciambellone.jpeg",
+  "image": "ciambellone.avif",
   "tags": ["dolci", "torte"]
 }
 ```
@@ -361,13 +362,17 @@ Status: `404 Not Found`
 
 ```json
 {
-  "message": "Not Found"
+  "message": "Not Found: GET /non-existent"
 }
 ```
 
 ## Current implementation notes
 
-- Posts are stored in `data/posts.json`; changes persist in the local JSON file.
+- Posts, tags, and their relationships are stored in MySQL. The legacy
+  `data/posts.json` file is retained as an exercise reference but is not used by
+  the posts repository.
+- Creating and updating a post uses a transaction because each operation can
+  modify `posts`, `tags`, and `post_tag` together.
 - Multiple values for the same query parameter are not supported.
 - A query parameter that is present but empty is invalid and returns
   `400 Bad Request`.

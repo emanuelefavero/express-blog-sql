@@ -27,30 +27,31 @@ GET {{baseUrl}}/posts/abc
 ### 404 - Post not found
 GET {{baseUrl}}/posts/999
 
-### POST create new post
+### POST create a post for the CRUD flow
+# @name createPost
 POST {{baseUrl}}/posts
 Content-Type: application/json
 
 {
   "title": "Scialatielli ai frutti di mare",
   "content": "Gli scialatielli ai frutti di mare sono un primo piatto tipico della Costiera Amalfitana, preparato con pasta fresca e sapori del Mediterraneo.",
-  "image": "/images/posts/scialatielli_frutti_mare.jpeg",
+  "image": "scialatielli_frutti_mare.avif",
   "tags": ["primi piatti", "ricette di pesce", "cucina campana"]
 }
 
-### PUT update post by ID
-PUT {{baseUrl}}/posts/6
+### PUT the post created above
+PUT {{baseUrl}}/posts/{{createPost.response.body.$.id}}
 Content-Type: application/json
 
 {
   "title": "Spaghetti al limone di Amalfi",
   "content": "Gli spaghetti al limone di Amalfi sono un primo piatto fresco e profumato, preparato con i celebri limoni della Costiera Amalfitana.",
-  "image": "/images/posts/spaghetti_limone_amalfi.jpeg",
+  "image": "spaghetti_limone_amalfi.avif",
   "tags": ["primi piatti", "ricette vegetariane", "cucina campana"]
 }
 
-### DELETE post by ID
-DELETE {{baseUrl}}/posts/6
+### DELETE the post created above
+DELETE {{baseUrl}}/posts/{{createPost.response.body.$.id}}
 
 ### 400 - Invalid post ID when deleting
 DELETE {{baseUrl}}/posts/abc
