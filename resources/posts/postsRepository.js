@@ -1,10 +1,4 @@
-import path from 'node:path';
 import { db } from '#/db/db.js';
-import { readJsonFile, writeJsonFile } from '#/utils/json.js';
-
-const postsFilePath = path.join(import.meta.dirname, '../../data/posts.json');
-
-const readPosts = () => readJsonFile(postsFilePath);
 
 const SORT_COLUMNS = {
   id: 'posts.id',
@@ -158,29 +152,69 @@ export const create = async (postData) => {
   }
 };
 
-export const update = (id, postData) => {
-  const posts = readPosts();
-  const postIndex = posts.findIndex((post) => post.id === id);
+export const update = async (id, postData) => {
+  const postId = Number(id);
+  const { title, content, image, tags } = postData;
+  const uniqueTags = [...new Set(tags)];
 
-  if (postIndex === -1) return null;
+  const connection = await db.getConnection();
 
-  const updatedPost = { id, ...postData };
-  posts[postIndex] = updatedPost;
+  try {
+    await connection.query('START TRANSACTION');
 
-  writeJsonFile(postsFilePath, posts);
+    const [postResult] = await connection.query(
+      `
+        UPDATE posts
+        SET title = ?, content = ?, image = ?
+        WHERE id = ?
+      `,
+      [title, content, image, postId],
+    );
 
-  return updatedPost;
+    if (postResult.affectedRows === 0) {
+      await connection.query('ROLLBACK');
+      return null;
+    }
+
+    await connection.query('DELETE FROM post_tag WHERE post_id = ?', [postId]);
+
+    for (const label of uniqueTags) {
+      const [tagResult] = await connection.query(
+        `
+          INSERT INTO tags (label)
+          VALUES (?)
+          ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
+        `,
+        [label],
+      );
+
+      await connection.query(
+        'INSERT INTO post_tag (post_id, tag_id) VALUES (?, ?)',
+        [postId, tagResult.insertId],
+      );
+    }
+
+    await connection.query('COMMIT');
+
+    return {
+      id: postId,
+      title,
+      content,
+      image,
+      tags: uniqueTags,
+    };
+  } catch (error) {
+    await connection.query('ROLLBACK');
+    throw error;
+  } finally {
+    connection.release();
+  }
 };
 
-export const destroy = (id) => {
-  const posts = readPosts();
-  const postIndex = posts.findIndex((post) => post.id === id);
+export const destroy = async (id) => {
+  const [result] = await db.query('DELETE FROM posts WHERE id = ?', [
+    Number(id),
+  ]);
 
-  if (postIndex === -1) return null;
-
-  const [destroyedPost] = posts.splice(postIndex, 1);
-
-  writeJsonFile(postsFilePath, posts);
-
-  return destroyedPost;
+  return result.affectedRows > 0;
 };
