@@ -23,6 +23,19 @@ registerErrors(app);
 app.use(middleware.notFound); // 404
 app.use(middleware.errorHandler); // Error handler
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
-});
+const startServer = async () => {
+  try {
+    await db.query('SELECT 1');
+    console.log('Database connection successful');
+
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}/`);
+    });
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+    await db.end();
+    process.exitCode = 1;
+  }
+};
+
+startServer();

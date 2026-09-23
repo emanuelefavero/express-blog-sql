@@ -11,6 +11,3 @@ export const db = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
-
-await db.query('SELECT 1');
-console.log('Database connection successful');
