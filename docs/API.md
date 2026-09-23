@@ -100,8 +100,7 @@ the [Endpoints](#endpoints) table.
 Returns an array containing all posts. Query parameters can be combined; they
 are applied in this order: filter by tag, search, sort, and limit.
 
-The INDEX response contains the columns from the `posts` table. Associated tags
-are currently included only in the SHOW response.
+The INDEX and SHOW responses include the tags associated with each post.
 
 #### Query parameters
 
@@ -141,7 +140,14 @@ Status: `200 OK`
     "id": 5,
     "title": "Torta paesana",
     "content": "La torta paesana è un dolce di origine lombarda...",
-    "image": "torta_paesana.avif"
+    "image": "torta_paesana.avif",
+    "tags": [
+      "Dolci",
+      "Torte",
+      "Ricette vegetariane",
+      "Ricette al forno",
+      "Dolci al cioccolato"
+    ]
   }
 ]
 ```

@@ -10,6 +10,38 @@ const SORT_ORDERS = {
   desc: 'DESC',
 };
 
+/**
+ * Finds tags associated with the given post IDs.
+ *
+ * @param {number[]} postIds
+ * @returns {Promise<Map<number, string[]>>} A map of post IDs and tag arrays
+ * @example
+ * { 1: ['tag1', 'tag2'], 2: [] } // return value
+ */
+const findTagsByPostIds = async (postIds) => {
+  const placeholders = postIds.map(() => '?').join(', ');
+
+  const [tagRows] = await db.query(
+    `
+      SELECT post_tag.post_id, tags.label
+      FROM post_tag
+      INNER JOIN tags
+        ON tags.id = post_tag.tag_id
+      WHERE post_tag.post_id IN (${placeholders})
+      ORDER BY post_tag.post_id, tags.id
+    `,
+    postIds,
+  );
+
+  const tagsByPostId = new Map(postIds.map((postId) => [postId, []]));
+
+  for (const tag of tagRows) {
+    tagsByPostId.get(tag.post_id).push(tag.label);
+  }
+
+  return tagsByPostId;
+};
+
 // REPOSITORY
 export const count = async () => {
   const [result] = await db.query('SELECT COUNT(*) AS count FROM posts');
@@ -66,7 +98,15 @@ export const findAll = async ({
 
   const [posts] = await db.query(sql, values);
 
-  return posts;
+  if (posts.length === 0) return [];
+
+  const postIds = posts.map((post) => post.id);
+  const tagsByPostId = await findTagsByPostIds(postIds);
+
+  return posts.map((post) => ({
+    ...post,
+    tags: tagsByPostId.get(post.id),
+  }));
 };
 
 export const findById = async (id) => {
