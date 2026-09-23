@@ -76,14 +76,29 @@ export const findAll = async ({
 };
 
 export const findById = async (id) => {
-  const sql = `
+  const postSql = `
     SELECT * FROM posts
     WHERE id = ?;
   `;
 
-  const [[post]] = await db.query(sql, [Number(id)]);
+  const [[post]] = await db.query(postSql, [Number(id)]);
 
-  return post;
+  if (!post) return null;
+
+  const tagsSql = `
+    SELECT tags.label
+    FROM tags
+    INNER JOIN post_tag
+      ON post_tag.tag_id = tags.id
+    WHERE post_tag.post_id = ?
+    ORDER BY tags.id;
+  `;
+
+  const [tagRows] = await db.query(tagsSql, [Number(id)]);
+
+  const tags = tagRows.map((tag) => tag.label);
+
+  return { ...post, tags };
 };
 
 export const create = async (postData) => {
