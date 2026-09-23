@@ -1,57 +1,76 @@
 import path from 'node:path';
+import { db } from '#/db/db.js';
 import { readJsonFile, writeJsonFile } from '#/utils/json.js';
 
 const postsFilePath = path.join(import.meta.dirname, '../../data/posts.json');
 
 const readPosts = () => readJsonFile(postsFilePath);
 
-// REPOSITORY
-export const count = () => readPosts().length;
+const SORT_COLUMNS = {
+  id: 'posts.id',
+  title: 'posts.title',
+};
 
-export const findAll = ({
+const SORT_ORDERS = {
+  asc: 'ASC',
+  desc: 'DESC',
+};
+
+// REPOSITORY
+export const count = async () => {
+  const [result] = await db.query('SELECT COUNT(*) AS count FROM posts');
+  return result[0].count;
+};
+
+export const findAll = async ({
   tag,
   search,
   sortBy,
   order = 'asc',
   _limit,
 } = {}) => {
-  let posts = readPosts();
+  const conditions = [];
+  const values = [];
+
+  let sql = `
+    SELECT DISTINCT posts.*
+    FROM posts
+  `;
 
   if (tag) {
-    posts = posts.filter((post) =>
-      post.tags.some((postTag) => postTag.toLowerCase() === tag.toLowerCase()),
-    );
+    sql += `
+      INNER JOIN post_tag
+        ON post_tag.post_id = posts.id
+      INNER JOIN tags
+        ON tags.id = post_tag.tag_id
+    `;
+
+    conditions.push('LOWER(tags.label) = LOWER(?)');
+    values.push(tag);
   }
 
   if (search) {
-    const normalizedSearch = search.toLowerCase();
-
-    posts = posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(normalizedSearch) ||
-        post.content.toLowerCase().includes(normalizedSearch),
+    conditions.push(
+      '(LOWER(posts.title) LIKE LOWER(?) OR LOWER(posts.content) LIKE LOWER(?))',
     );
+    const searchPattern = `%${search}%`;
+    values.push(searchPattern, searchPattern);
   }
 
-  if (sortBy === 'id') {
-    posts = posts.toSorted((firstPost, secondPost) => {
-      return order === 'asc'
-        ? firstPost.id - secondPost.id
-        : secondPost.id - firstPost.id;
-    });
+  if (conditions.length > 0) {
+    sql += ` WHERE ${conditions.join(' AND ')}`;
   }
 
-  if (sortBy === 'title') {
-    posts = posts.toSorted((firstPost, secondPost) => {
-      return order === 'asc'
-        ? firstPost.title.localeCompare(secondPost.title)
-        : secondPost.title.localeCompare(firstPost.title);
-    });
+  if (sortBy && SORT_COLUMNS[sortBy]) {
+    sql += ` ORDER BY ${SORT_COLUMNS[sortBy]} ${SORT_ORDERS[order] || 'ASC'}`;
   }
 
   if (_limit) {
-    posts = posts.slice(0, Number(_limit));
+    sql += ' LIMIT ?';
+    values.push(Number(_limit));
   }
+
+  const [posts] = await db.query(sql, values);
 
   return posts;
 };

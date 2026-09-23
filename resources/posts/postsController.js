@@ -9,41 +9,41 @@ const sendValidationError = (res, error) =>
   res.status(400).json({ message: error.issues[0].message });
 
 // CONTROLLERS
-export const index = (req, res) => {
+export const index = async (req, res) => {
   const result = postQuerySchema.safeParse(req.query);
 
   if (!result.success) return sendValidationError(res, result.error);
 
-  const posts = postsRepository.findAll(result.data);
+  const posts = await postsRepository.findAll(result.data);
 
   return res.json(posts);
 };
 
-export const show = (req, res) => {
+export const show = async (req, res) => {
   const result = postParamsSchema.safeParse(req.params);
 
   if (!result.success) return sendValidationError(res, result.error);
 
   const { id } = result.data;
 
-  const post = postsRepository.findById(id);
+  const post = await postsRepository.findById(id);
 
   if (!post) return res.status(404).json({ message: 'Post non trovato' });
 
   return res.json(post);
 };
 
-export const store = (req, res) => {
+export const store = async (req, res) => {
   const result = postBodySchema.safeParse(req.body);
 
   if (!result.success) return sendValidationError(res, result.error);
 
-  const createdPost = postsRepository.create(result.data);
+  const createdPost = await postsRepository.create(result.data);
 
   return res.status(201).location(`/posts/${createdPost.id}`).json(createdPost);
 };
 
-export const update = (req, res) => {
+export const update = async (req, res) => {
   const paramsResult = postParamsSchema.safeParse(req.params);
 
   if (!paramsResult.success)
@@ -55,7 +55,7 @@ export const update = (req, res) => {
 
   const { id } = paramsResult.data;
 
-  const updatedPost = postsRepository.update(id, bodyResult.data);
+  const updatedPost = await postsRepository.update(id, bodyResult.data);
 
   if (!updatedPost)
     return res.status(404).json({ message: 'Post non trovato' });
@@ -63,14 +63,14 @@ export const update = (req, res) => {
   return res.json(updatedPost);
 };
 
-export const destroy = (req, res) => {
+export const destroy = async (req, res) => {
   const result = postParamsSchema.safeParse(req.params);
 
   if (!result.success) return sendValidationError(res, result.error);
 
   const { id } = result.data;
 
-  const destroyedPost = postsRepository.destroy(id);
+  const destroyedPost = await postsRepository.destroy(id);
 
   if (!destroyedPost)
     return res.status(404).json({ message: 'Post non trovato' });
